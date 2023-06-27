@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Appointment App</title>
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ"
+            crossorigin="anonymous"
+        />
+    </head>
+    <body style="text-align: center">
+        <div class="container">
+            <div class="row-md-12">
+                <p style="color: rgb(235, 164, 12); font-size: 30px">
+                    Book an Appointment
+                </p>
+                <form
+                    action=""
+                    id="form"
+                    onsubmit="q(event)"
+                    style="background-color: rgb(208, 111, 121); padding: 10px"
+                >
+                    Name:
+                    <input type="text" id="fname" name="fname" /><br /><br />
+
+                    Email:
+                    <input type="email" id="email" name="email" /><br /><br />
+                    <input type="submit" value="Submit" />
+                </form>
+                <ul id="ul"></ul>
+            </div>
+        </div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
+        <script>
+            window.addEventListener("DOMContentLoaded", () => {
+                axios
+                    .get(
+                        "https://crudcrud.com/api/8d3a0c00638e4bb0bcc4cf4a230e71bd/appointmentData"
+                    )
+                    .then((response) => {
+                        console.log(response);
+                        for (var i = 0; i < response.data.length; i++) {
+                            ad(response.data[i]);
+                        }
+                    })
+                    .catch((err) => console.log(err));
+            });
+            let ul = document.getElementById("ul");
+            function q(event) {
+                event.preventDefault();
+                let ob = {
+                    username: document.getElementById("fname").value,
+                    email: document.getElementById("email").value,
+                };
+                axios
+                    .post(
+                        "https://crudcrud.com/api/8d3a0c00638e4bb0bcc4cf4a230e71bd/appointmentData",
+                        ob
+                    )
+                    .then((response) => console.log(response))
+                    .catch((err) => console.log(err));
+                localStorage.setItem(ob.email, JSON.stringify(ob));
+
+                ad(ob);
+            }
+
+            function ad(ob) {
+                let li = document.createElement("li");
+                let nText = ob.username;
+                let nEmail = ob.email;
+                let nNode = document.createTextNode(`${nText} - ${nEmail}`);
+                let delButton = document.createElement("button");
+                let editButton = document.createElement("button");
+                delButton.classList.add("Delete");
+                editButton.classList.add("Edit");
+                delButton.textContent = "Delete";
+                editButton.textContent = "Edit";
+                delButton.onclick = function (e) {
+                    deleteEntry(e, ob.email, li);
+                };
+                editButton.onclick = function (e) {
+                    editEntry(e, ob.email, li);
+                };
+                li.appendChild(nNode);
+                li.appendChild(delButton);
+                li.appendChild(editButton);
+                ul.appendChild(li);
+            }
+            function deleteEntry(e, email, li) {
+                if (e.target.classList.contains("Delete")) {
+                    localStorage.removeItem(email);
+                    li.remove();
+                }
+            }
+            function editEntry(e, email, li) {
+                if (e.target.classList.contains("Edit")) {
+                    localStorage.removeItem(email);
+                    let form = document.getElementById("form");
+                    let values = li.childNodes[0].textContent.split("-");
+                    form.username.value = values[0];
+                    form.email.value = values[1];
+
+                    li.remove();
+                }
+            }
+            function clearForm() {
+                document.getElementById("form").reset();
+            }
+        </script>
+    </body>
+</html>
